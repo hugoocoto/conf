@@ -28,13 +28,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build and install Lua from source
-        run: |
-          curl -L -R -O https://www.lua.org/ftp/lua-5.5.0.tar.gz
-          tar zxf lua-5.5.0.tar.gz
-          cd lua-5.5.0
-          make macosx
-          sudo make install
+      - name: Install dependencies
+        run: brew install lua
       - name: Build and test
         run: make test_all
 
@@ -54,4 +49,4 @@ jobs:
             gmake bsd
             gmake install
             cd ..
-            gmake test_all
+            gmake test_all CC=gcc CXX=g++
