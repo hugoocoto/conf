@@ -1,4 +1,4 @@
-/* conf.h - v0.3 - public domain lua config reader - Hugo Coto Florez 2026
+/* conf.h - v1.0 - public domain lua config reader - Hugo Coto Florez 2026
 
    To use this library, do this in *one* C file:
       #define INCLUDE_CONF_IMPLEMENTATION
@@ -166,13 +166,13 @@ typedef struct __conf *Conf;
  * See the DOCUMENTATION section above for details.
  */
 
-int Conf_open(Conf *conf, const char *filename);                 // Open a Lua file and produce a Conf handle
+int Conf_open(Conf *conf, const char *filename);                     // Open a Lua file and produce a Conf handle
 int Conf_get_num(Conf conf, double *val, const char *fmt, ...);      // Format path, store numeric result
-int Conf_get_int(Conf conf, int *val, const char *fmt, ...);   // Format path, store integer result
+int Conf_get_int(Conf conf, int *val, const char *fmt, ...);         // Format path, store integer result
 int Conf_get_str(Conf conf, const char **val, const char *fmt, ...); // Format path, store string result
 int Conf_get_bool(Conf conf, int *val, const char *fmt, ...);        // Format path, store bool result
 int Conf_get_len(Conf conf, int *len, const char *fmt, ...);         // Format path, store array length
-int Conf_close(Conf conf);                                 // Release all resources held by 'conf'
+int Conf_close(Conf conf);                                           // Release all resources held by 'conf'
 
 #if defined(INCLUDE_CONF_IMPLEMENTATION)
 
@@ -250,9 +250,9 @@ Conf_open(Conf *conf, const char *filename)
                         /* stack: table, key, value */
                         if (lua_type(c->L, -2) == LUA_TSTRING) {
                                 const char *k = lua_tostring(c->L, -2);
-                                lua_setglobal(c->L, k);  /* pops value, sets global */
+                                lua_setglobal(c->L, k); /* pops value, sets global */
                         } else {
-                                lua_pop(c->L, 1);        /* pop value, keep key */
+                                lua_pop(c->L, 1); /* pop value, keep key */
                         }
                 }
         }
