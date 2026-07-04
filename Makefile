@@ -1,16 +1,9 @@
-LUA_PKG := $(shell pkg-config --exists lua 2>/dev/null && echo lua)
+CFLAGS   = -Wall -Wextra -std=c99 -D_DEFAULT_SOURCE -I. $(shell pkg-config --cflags lua 2>/dev/null)
+CXXFLAGS = -Wall -Wextra -std=c++11 -D_DEFAULT_SOURCE -I. $(shell pkg-config --cflags lua 2>/dev/null)
+LDLIBS   = $(shell pkg-config --libs lua 2>/dev/null || echo '-llua') -lm
 
 TARGET   = a.out
 TARGET_CPP = a_cpp.out
-CFLAGS   = -Wall -Wextra -std=c99 -D_DEFAULT_SOURCE -I.
-CXXFLAGS = -Wall -Wextra -std=c++17 -D_DEFAULT_SOURCE -I.
-LDLIBS   = -llua -lm
-
-ifdef LUA_PKG
-  CFLAGS   += $(shell pkg-config --cflags lua)
-  CXXFLAGS += $(shell pkg-config --cflags lua)
-  LDLIBS    = $(shell pkg-config --libs lua) -lm
-endif
 
 test_all: test test_cpp
 

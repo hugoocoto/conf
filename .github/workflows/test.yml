@@ -64,7 +64,7 @@ jobs:
             if [ '${{ matrix.lua }}' = 'source' ]; then
               pkg install -y curl gmake gcc
             else
-              pkg install -y curl gmake gcc lua54
+              pkg install -y curl gmake gcc lua
             fi
           run: |
             if [ '${{ matrix.lua }}' = 'source' ]; then
