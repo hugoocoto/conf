@@ -7,33 +7,52 @@ on:
     branches: [ "**" ]
 
 jobs:
-  linux:
-    runs-on: ubuntu-latest
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-source
+            os: ubuntu-latest
+            install: |
+              sudo apt-get update -qq
+              sudo apt-get install -y -qq build-essential curl
+              curl -L -R -O https://www.lua.org/ftp/lua-5.5.0.tar.gz
+              tar zxf lua-5.5.0.tar.gz
+              cd lua-5.5.0
+              make linux
+              sudo make install
+              sudo ldconfig
+          - name: linux-apt
+            os: ubuntu-latest
+            install: |
+              sudo apt-get update -qq
+              sudo apt-get install -y -qq liblua5.4-dev
+          - name: macos-source
+            os: macos-latest
+            install: |
+              curl -L -R -O https://www.lua.org/ftp/lua-5.5.0.tar.gz
+              tar zxf lua-5.5.0.tar.gz
+              cd lua-5.5.0
+              make macosx
+              sudo make install
+          - name: macos-brew
+            os: macos-latest
+            install: |
+              brew install lua
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install build dependencies
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq build-essential curl
-      - name: Build and install Lua from source
-        run: |
-          curl -L -R -O https://www.lua.org/ftp/lua-5.5.0.tar.gz
-          tar zxf lua-5.5.0.tar.gz
-          cd lua-5.5.0
-          make linux
-          sudo make install
-          sudo ldconfig
-      - name: Build and test
-        run: make test_all
-
-  macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: brew install lua
+      - name: Install Lua
+        run: ${{ matrix.install }}
       - name: Build and test
         run: make test_all
 
   freebsd:
+    strategy:
+      fail-fast: false
+      matrix:
+        lua: [source, pkg]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,12 +60,19 @@ jobs:
         uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
-          prepare: pkg install -y curl gmake gcc
+          prepare: |
+            if [ '${{ matrix.lua }}' = 'source' ]; then
+              pkg install -y curl gmake gcc
+            else
+              pkg install -y curl gmake gcc lua54
+            fi
           run: |
-            curl -L -R -O https://www.lua.org/ftp/lua-5.5.0.tar.gz
-            tar zxf lua-5.5.0.tar.gz
-            cd lua-5.5.0
-            gmake bsd
-            gmake install
-            cd ..
+            if [ '${{ matrix.lua }}' = 'source' ]; then
+              curl -L -R -O https://www.lua.org/ftp/lua-5.5.0.tar.gz
+              tar zxf lua-5.5.0.tar.gz
+              cd lua-5.5.0
+              gmake bsd
+              gmake install
+              cd ..
+            fi
             gmake test_all CC=gcc CXX=g++
