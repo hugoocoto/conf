@@ -1,5 +1,5 @@
 LUA_CFLAGS := $(shell pkg-config --cflags lua)
-LUA_LDLIBS := $(shell pkg-config --libs lua)
+LUA_LDLIBS := $(shell pkg-config --libs lua || echo "-llua")
 
 TARGET   = a.out
 TARGET_CPP = a_cpp.out
