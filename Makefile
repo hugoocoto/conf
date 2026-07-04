@@ -1,12 +1,22 @@
-TARGET  = a.out
-CFLAGS  = -Wall -Wextra -std=c99 -D_DEFAULT_SOURCE
-LDLIBS  = -llua -lm
+TARGET   = a.out
+TARGET_CPP = a_cpp.out
+CFLAGS   = -Wall -Wextra -std=c99 -D_DEFAULT_SOURCE -I.
+CXXFLAGS = -Wall -Wextra -std=c++17 -D_DEFAULT_SOURCE -I.
+LDLIBS   = -llua -lm
 
-$(TARGET): test.c conf.h
-	$(CC) $(CFLAGS) -o $@ test.c $(LDLIBS)
+test_all: test test_cpp
 
 test: $(TARGET)
-	./$(TARGET)
+	cd test && ../$(TARGET)
+
+test_cpp: $(TARGET_CPP)
+	cd test && ../$(TARGET_CPP)
+
+$(TARGET): test/test.c conf.h
+	$(CC) $(CFLAGS) -o $@ test/test.c $(LDLIBS)
+
+$(TARGET_CPP): test/test.cpp conf.h
+	$(CXX) $(CXXFLAGS) -o $@ test/test.cpp $(LDLIBS)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(TARGET_CPP)

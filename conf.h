@@ -166,9 +166,9 @@ typedef struct __conf *Conf;
  * See the DOCUMENTATION section above for details.
  */
 
-int Conf_open(Conf *conf, char *filename);                 // Open a Lua file and produce a Conf handle
+int Conf_open(Conf *conf, const char *filename);                 // Open a Lua file and produce a Conf handle
 int Conf_get_num(Conf conf, double *val, const char *fmt, ...);      // Format path, store numeric result
-int Conf_get_int(Conf conf, long long *val, const char *fmt, ...);   // Format path, store integer result
+int Conf_get_int(Conf conf, int *val, const char *fmt, ...);   // Format path, store integer result
 int Conf_get_str(Conf conf, const char **val, const char *fmt, ...); // Format path, store string result
 int Conf_get_bool(Conf conf, int *val, const char *fmt, ...);        // Format path, store bool result
 int Conf_get_len(Conf conf, int *len, const char *fmt, ...);         // Format path, store array length
@@ -234,7 +234,7 @@ cleanup:
 }
 
 int
-Conf_open(Conf *conf, char *filename)
+Conf_open(Conf *conf, const char *filename)
 {
         Conf c = (Conf) calloc(1, sizeof(struct __conf));
         if (c == NULL) goto err;
@@ -343,7 +343,7 @@ Conf_get_bool(Conf conf, int *val, const char *fmt, ...)
 }
 
 int
-Conf_get_int(Conf conf, long long *val, const char *fmt, ...)
+Conf_get_int(Conf conf, int *val, const char *fmt, ...)
 {
         char path[1024];
         int n;
@@ -360,7 +360,7 @@ Conf_get_int(Conf conf, long long *val, const char *fmt, ...)
                 lua_pop(conf->L, 1);
                 return CONF_INVALID;
         }
-        *val = (long long) lua_tointeger(conf->L, -1);
+        *val = (int) lua_tointeger(conf->L, -1);
         lua_pop(conf->L, 1);
         return CONF_OK;
 }
