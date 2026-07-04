@@ -52,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lua: [source, pkg]
+        lua: [source]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,18 +61,12 @@ jobs:
         with:
           usesh: true
           prepare: |
-            if [ '${{ matrix.lua }}' = 'source' ]; then
-              pkg install -y curl gmake gcc
-            else
-              pkg install -y curl gmake gcc lua
-            fi
+            pkg install -y curl gmake gcc
           run: |
-            if [ '${{ matrix.lua }}' = 'source' ]; then
-              curl -L -R -O https://www.lua.org/ftp/lua-5.5.0.tar.gz
-              tar zxf lua-5.5.0.tar.gz
-              cd lua-5.5.0
-              gmake bsd
-              gmake install
-              cd ..
-            fi
+            curl -L -R -O https://www.lua.org/ftp/lua-5.5.0.tar.gz
+            tar zxf lua-5.5.0.tar.gz
+            cd lua-5.5.0
+            gmake bsd
+            gmake install
+            cd ..
             gmake test_all CC=gcc CXX=g++
