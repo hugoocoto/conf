@@ -1,6 +1,6 @@
 LUA        ?= lua5.1
-LUA_CFLAGS  = $(shell pkg-config --cflags $(LUA) 2>/dev/null)
-LUA_LIBS    = $(shell pkg-config --libs $(LUA) 2>/dev/null || echo '-l$(LUA)')
+LUA_CFLAGS  = $(shell pkg-config --cflags $(LUA) 2>/dev/null || pkg-config --cflags lua 2>/dev/null)
+LUA_LIBS    = $(shell pkg-config --libs $(LUA) 2>/dev/null || pkg-config --libs lua 2>/dev/null || echo '-l$(LUA)')
 
 CFLAGS   = -Wall -Wextra -std=c99 -D_DEFAULT_SOURCE -I. $(LUA_CFLAGS)
 CXXFLAGS = -Wall -Wextra -std=c++11 -D_DEFAULT_SOURCE -I. $(LUA_CFLAGS)

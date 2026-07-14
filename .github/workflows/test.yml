@@ -70,7 +70,7 @@ jobs:
         with:
           usesh: true
           prepare: |
-            pkg install -y curl gmake gcc
+            pkg install -y curl gmake gcc pkgconf
           run: |
             pkg install -y ${{ matrix.lua_pkg }}
             gmake test_all CC=gcc CXX=g++ LUA=${{ matrix.lua }}
