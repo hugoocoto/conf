@@ -90,13 +90,13 @@ adapts your style:
    }
    ```
 
-5. If err = Conf_*()
+5. If switch Conf_*() (most based one)
    ```c
-   if((err = Conf_get_num(conf, &val, "Config.font.size"))){
-       // error handling
-       switch (err){
-           case CONF_INVALID:
-           ...
-       }
+   // error handling
+   switch (Conf_get_num(conf, &val, "Config.font.size")){
+       case CONF_OK:
+       case CONF_INVALID:
+       ...
    }
    ```
+
