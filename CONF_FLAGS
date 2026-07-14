@@ -1,4 +1,8 @@
-# Use this in your makefile to link with liblua 5.4 in almost every system
+# Use this in your makefile to link with Lua 5.1 or LuaJIT
+# Override LUA to choose the backend, e.g.:
+#   make LUA=luajit    # LuaJIT
+#   make LUA=lua5.1    # PUC-Rio Lua 5.1 (default)
 
-LUA_CFLAGS = $(shell pkg-config --cflags lua 2>/dev/null || pkg-config --cflags lua5.4 2>/dev/null)
-LUA_LIBS = $(shell pkg-config --libs lua 2>/dev/null || pkg-config --libs lua5.4 2>/dev/null || echo '-llua')
+LUA        ?= lua5.1
+LUA_CFLAGS  = $(shell pkg-config --cflags $(LUA) 2>/dev/null)
+LUA_LIBS    = $(shell pkg-config --libs $(LUA) 2>/dev/null || echo '-l$(LUA)')

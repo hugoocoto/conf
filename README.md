@@ -29,8 +29,8 @@ Conf_close(conf);
 
 ## Requirements
 
-- Lua 5.5 (tested; earlier versions may work but are untested)
-- Link with `-llua` (or equivalent for your Lua installation)
+- Lua 5.1 or LuaJIT (both implement the Lua 5.1 API)
+- Run `make` to build with PUC-Rio Lua 5.1, or `make LUA=luajit` for LuaJIT
 
 ## Integration
 

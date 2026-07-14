@@ -212,7 +212,7 @@ conf_traverse(lua_State *L, char *path)
                 }
                 idx = strtol(part, &endptr, 10);
                 if (*endptr == '\0' && endptr != part)
-                        lua_geti(L, -1, idx);
+                        lua_rawgeti(L, -1, idx);
                 else
                         lua_getfield(L, -1, part);
                 lua_remove(L, -2); // pop the table, keep the field value
@@ -236,17 +236,22 @@ cleanup:
 int
 Conf_open(Conf *conf, const char *filename)
 {
+        int base = 0, nret = 0;
         Conf c = (Conf) calloc(1, sizeof(struct __conf));
         if (c == NULL) goto err;
         *conf = c;
         c->L = luaL_newstate();
         if (c->L == NULL) goto err;
         if (!c->do_not_load_stdlib) luaL_openlibs(c->L);
-        if (luaL_dofile(c->L, filename) != LUA_OK) goto err;
-        /* if the chunk returned a table, lift its entries to globals */
-        if (lua_gettop(c->L) >= 1 && lua_istable(c->L, -1)) {
+        base = lua_gettop(c->L);
+        if (luaL_dofile(c->L, filename)) goto err;
+        /* lift entries from all returned tables to globals */
+        nret = lua_gettop(c->L) - base;
+        for (int i = 1; i <= nret; i++) {
+                if (!lua_istable(c->L, i))
+                        continue;
                 lua_pushnil(c->L);
-                while (lua_next(c->L, -2) != 0) {
+                while (lua_next(c->L, i) != 0) {
                         /* stack: table, key, value */
                         if (lua_type(c->L, -2) == LUA_TSTRING) {
                                 const char *k = lua_tostring(c->L, -2);
@@ -256,8 +261,7 @@ Conf_open(Conf *conf, const char *filename)
                         }
                 }
         }
-        if (lua_gettop(c->L) >= 1)
-                lua_pop(c->L, 1);
+        lua_settop(c->L, base);
         return CONF_OK;
 err:
         Conf_close(c);
@@ -356,11 +360,16 @@ Conf_get_int(Conf conf, int *val, const char *fmt, ...)
 
         int type = conf_traverse(conf->L, path);
         if (type < 0) return -type;
-        if (type != LUA_TNUMBER || !lua_isinteger(conf->L, -1)) {
+        if (type != LUA_TNUMBER) {
                 lua_pop(conf->L, 1);
                 return CONF_INVALID;
         }
-        *val = (int) lua_tointeger(conf->L, -1);
+        double __v = lua_tonumber(conf->L, -1);
+        if (__v != (double)(int)__v) {
+                lua_pop(conf->L, 1);
+                return CONF_INVALID;
+        }
+        *val = (int) __v;
         lua_pop(conf->L, 1);
         return CONF_OK;
 }
@@ -383,7 +392,7 @@ Conf_get_len(Conf conf, int *len, const char *fmt, ...)
                 lua_pop(conf->L, 1);
                 return CONF_INVALID;
         }
-        *len = (int) lua_rawlen(conf->L, -1);
+        *len = (int) lua_objlen(conf->L, -1);
         lua_pop(conf->L, 1);
         return CONF_OK;
 }

@@ -12,47 +12,56 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: linux-source
+          - name: linux-lua5.1
             os: ubuntu-latest
             install: |
               sudo apt-get update -qq
-              sudo apt-get install -y -qq build-essential curl
-              curl -L -R -O https://www.lua.org/ftp/lua-5.5.0.tar.gz
-              tar zxf lua-5.5.0.tar.gz
-              cd lua-5.5.0
-              make linux
-              sudo make install
-              sudo ldconfig
-          - name: linux-apt
+              sudo apt-get install -y -qq liblua5.1-dev
+            lua: lua5.1
+          - name: linux-luajit
             os: ubuntu-latest
             install: |
               sudo apt-get update -qq
-              sudo apt-get install -y -qq liblua5.4-dev
-          - name: macos-source
+              sudo apt-get install -y -qq build-essential
+              if ! sudo apt-get install -y -qq libluajit-5.1-dev 2>/dev/null; then
+                git clone --depth 1 https://github.com/LuaJIT/LuaJIT.git
+                make -C LuaJIT && sudo make -C LuaJIT install && sudo ldconfig
+              fi
+            lua: luajit
+          - name: macos-lua5.1
             os: macos-latest
             install: |
-              curl -L -R -O https://www.lua.org/ftp/lua-5.5.0.tar.gz
-              tar zxf lua-5.5.0.tar.gz
-              cd lua-5.5.0
-              make macosx
-              sudo make install
-          - name: macos-brew
+              if ! brew install lua@5.1 2>/dev/null; then
+                curl -L -R -O https://www.lua.org/ftp/lua-5.1.5.tar.gz
+                tar zxf lua-5.1.5.tar.gz
+                cd lua-5.1.5
+                make macosx
+                sudo make install
+              fi
+            lua: lua
+          - name: macos-luajit
             os: macos-latest
-            install: |
-              brew install lua
+            install: brew install luajit
+            lua: luajit
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Install Lua
         run: ${{ matrix.install }}
       - name: Build and test
-        run: make test_all
+        run: make test_all LUA=${{ matrix.lua }}
 
   freebsd:
     strategy:
       fail-fast: false
       matrix:
-        lua: [source]
+        include:
+          - name: freebsd-lua5.1
+            lua_pkg: lua51
+            lua: lua-5.1
+          - name: freebsd-luajit
+            lua_pkg: luajit
+            lua: luajit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -63,10 +72,5 @@ jobs:
           prepare: |
             pkg install -y curl gmake gcc
           run: |
-            curl -L -R -O https://www.lua.org/ftp/lua-5.5.0.tar.gz
-            tar zxf lua-5.5.0.tar.gz
-            cd lua-5.5.0
-            gmake bsd
-            gmake install
-            cd ..
-            gmake test_all CC=gcc CXX=g++
+            pkg install -y ${{ matrix.lua_pkg }}
+            gmake test_all CC=gcc CXX=g++ LUA=${{ matrix.lua }}
