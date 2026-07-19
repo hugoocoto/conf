@@ -467,6 +467,13 @@ test_trunc(void)
         Conf_close(conf);
 }
 
+static void
+test_fail(void)
+{
+        Conf conf;
+        TEST("conf open fail", Conf_open(&conf, "none.lua") == CONF_NOTFOUND);
+        TEST("conf open fail", Conf_close(conf) == CONF_INVALID);
+}
 
 int
 main(void)
@@ -507,6 +514,10 @@ main(void)
 
         test_trunc();
         printf("  Conf_trunc tests: %d passed, %d failed\n", npassed, nfailed);
+        npassed = nfailed = 0;
+
+        test_fail();
+        printf("  Failure tests: %d passed, %d failed\n", npassed, nfailed);
         npassed = nfailed = 0;
 
         printf("\n");

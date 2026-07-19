@@ -189,10 +189,10 @@ static int
 conf_traverse(lua_State *L, char *path)
 {
         char *content = strdup(path);
-        char *save = NULL;
-        char *part = strtok_r(content, ".", &save);
-        char *next = strtok_r(NULL, ".", &save);
-        int base = lua_gettop(L);
+        char *save    = NULL;
+        char *part    = strtok_r(content, ".", &save);
+        char *next    = strtok_r(NULL, ".", &save);
+        int base      = lua_gettop(L);
         int ret;
         long idx;
         char *endptr;
@@ -240,11 +240,15 @@ Conf_open(Conf *conf, const char *filename)
         Conf c = (Conf) calloc(1, sizeof(struct __conf));
         if (c == NULL) goto err;
         *conf = c;
-        c->L = luaL_newstate();
+        c->L  = luaL_newstate();
         if (c->L == NULL) goto err;
         if (!c->do_not_load_stdlib) luaL_openlibs(c->L);
         base = lua_gettop(c->L);
-        if (luaL_dofile(c->L, filename)) goto err;
+        if (luaL_dofile(c->L, filename)) {
+                fprintf(stderr, "conf: %s\n", lua_tostring(c->L, -1));
+                lua_pop(c->L, 1);
+                goto err;
+        }
         /* lift entries from all returned tables to globals */
         nret = lua_gettop(c->L) - base;
         for (int i = 1; i <= nret; i++) {
@@ -264,6 +268,7 @@ Conf_open(Conf *conf, const char *filename)
         lua_settop(c->L, base);
         return CONF_OK;
 err:
+        *conf = NULL;
         Conf_close(c);
         return CONF_NOTFOUND;
 }
@@ -365,7 +370,7 @@ Conf_get_int(Conf conf, int *val, const char *fmt, ...)
                 return CONF_INVALID;
         }
         double __v = lua_tonumber(conf->L, -1);
-        if (__v != (double)(int)__v) {
+        if (__v != (double) (int) __v) {
                 lua_pop(conf->L, 1);
                 return CONF_INVALID;
         }
